@@ -8,7 +8,7 @@ package object settlement {
   case class AssetsRequest(asset: Asset, quantity: Quantity)
 
 
-  case class Assets(instrument: Asset, quantity: Quantity)
+  case class Assets(asset: Asset, quantity: Quantity)
 
 
   case class Payment(amount: Quantity)

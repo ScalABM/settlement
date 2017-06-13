@@ -9,53 +9,55 @@ import scala.util.{Failure, Success, Try}
 trait AssetsHolder {
   this: Actor with ActorLogging =>
 
-  type Assets = Map[Asset, Quantity]
+  type Holdings = Map[Asset, Quantity]
 
   /* For now assume that AssetsHolderLike can take negative asset positions. */
-  var assets: Assets = Map.empty[Asset, Quantity]
+  var holdings: Holdings = Map.empty[Asset, Quantity]
 
   /* Increments an actor's cash holdings. */
-  def hoard(amount: Quantity): Assets = {
-    val current = assets.getOrElse(Currency, Quantity(0))
-    assets.updated(Currency, current + amount)
+  def hoard(amount: Quantity): Holdings = {
+    val current = holdings.getOrElse(Currency, Quantity(0))
+    holdings.updated(Currency, current + amount)
   }
 
   /* Decrements an actor's cash holdings. */
-  def dishoard(amount: Quantity): (Try[Payment], Assets) = {
-    val current = assets.getOrElse(Currency, Quantity(0))
+  def dishoard(amount: Quantity): (Try[Payment], Holdings) = {
+    val current = holdings.getOrElse(Currency, Quantity(0))
     if (current >= amount) {
-      (Success(Payment(amount)), assets.updated(Currency, current + amount))
+      (Success(Payment(amount)), holdings.updated(Currency, current + amount))
     } else {
-      (Failure(InsufficientFundsException()), assets)
+      (Failure(InsufficientFundsException()), holdings)
     }
   }
 
   /* Increment actor's securities holdings. */
-  def accumulate(asset: Asset, quantity: Quantity): Assets = {
-    assets(asset) += quantity
+  def accumulate(asset: Asset, quantity: Quantity): Holdings = {
+    holdings(asset) += quantity
   }
 
   /* Decrement actor's securities holdings. */
-  def deccumulate(asset: Asset, quantity: Quantity): (Try[Assets], Assets) = {
-    val current = assets.getOrElse(asset, Quantity(0))
+  def deccumulate(asset: Asset, quantity: Quantity): (Try[Assets], Holdings) = {
+    val current = holdings.getOrElse(asset, Quantity(0))
     if (current >= quantity) {
-      (Success(Assets(asset, quantity)), assets.updated(asset, current - quantity))
+      (Success(Assets(asset, quantity)), holdings.updated(asset, current - quantity))
     } else {
-      (Failure(InsufficientAssetsException()), assets)
+      (Failure(InsufficientAssetsException()), holdings)
     }
   }
 
   def assetsHolderBehavior: Receive = {
     case Payment(amount) =>
-      hoard(amount)
+      holdings = hoard(amount)
     case PaymentRequest(amount) =>
-      val payment = dishoard(amount)
+      val (payment, updated) = dishoard(amount)
       sender() ! payment
+      holdings = updated
     case AssetsRequest(asset, quantity) =>
-      val assets = deccumulate(asset, quantity)
+      val (assets, updated) = deccumulate(asset, quantity)
       sender() ! assets
+      holdings = updated
     case Assets(asset, quantity) =>
-      accumulate(asset, quantity)
+      holdings = accumulate(asset, quantity)
   }
 
 }

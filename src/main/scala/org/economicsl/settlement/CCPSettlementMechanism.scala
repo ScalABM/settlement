@@ -12,7 +12,7 @@ package org.economicsl.settlement
 class CCPSettlementMechanism extends SettlementMechanism with AssetsHolder {
 
   /* For now assume that central counterparty has "deep pockets". */
-  override val assets: mutable.Map[Asset, Double] = {
+  override val holdings: mutable.Map[Asset, Double] = {
     mutable.Map[Asset, Double]().withDefaultValue(Double.PositiveInfinity)
   }
 
