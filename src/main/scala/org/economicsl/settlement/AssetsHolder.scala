@@ -5,11 +5,11 @@ import akka.actor.{Actor, ActorLogging}
 import scala.util.{Failure, Success, Try}
 
 
-trait AssetsHolderLike {
+trait AssetsHolder {
   this: Actor with ActorLogging =>
 
   /* For now assume that AssetsHolderLike can take negative asset positions. */
-  val assets: mutable.Map[AssetLike, Double] = mutable.Map[AssetLike, Double]().withDefaultValue(0.0)
+  val assets: mutable.Map[Asset, Double] = mutable.Map[Asset, Double]().withDefaultValue(0.0)
 
   /* Increments an actor's cash holdings. */
   def hoard(amount: Double): Unit = {
@@ -27,12 +27,12 @@ trait AssetsHolderLike {
   }
 
   /* Increment actor's securities holdings. */
-  def accumulate(asset: AssetLike, quantity: Double): Unit = {
+  def accumulate(asset: Asset, quantity: Double): Unit = {
     assets(asset) += quantity
   }
 
   /* Decrement actor's securities holdings. */
-  def deccumulate(asset: AssetLike, quantity: Double): Try[Assets] = {
+  def deccumulate(asset: Asset, quantity: Double): Try[Assets] = {
     if (assets(asset) >= quantity) {
       assets(asset) -= quantity
       Success(Assets(asset, quantity))

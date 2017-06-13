@@ -9,11 +9,11 @@ package org.economicsl.settlement
   * a counterparty on every transaction the CCP effectively assumes all
   * counterparty risk.
   */
-class CCPSettlementMechanism extends SettlementMechanism with AssetsHolderLike {
+class CCPSettlementMechanism extends SettlementMechanism with AssetsHolder {
 
   /* For now assume that central counterparty has "deep pockets". */
-  override val assets: mutable.Map[AssetLike, Double] = {
-    mutable.Map[AssetLike, Double]().withDefaultValue(Double.PositiveInfinity)
+  override val assets: mutable.Map[Asset, Double] = {
+    mutable.Map[Asset, Double]().withDefaultValue(Double.PositiveInfinity)
   }
 
   /* BilateralClearingMechanism can be used to process novated fills. */

@@ -3,10 +3,10 @@ package org.economicsl
 
 package object settlement {
 
-  case class AssetsRequest(asset: AssetLike, quantity: Double)
+  case class AssetsRequest(asset: Asset, quantity: Double)
 
 
-  case class Assets(instrument: AssetLike, quantity: Double)
+  case class Assets(instrument: Asset, quantity: Double)
 
 
   case class Payment(amount: Double)
