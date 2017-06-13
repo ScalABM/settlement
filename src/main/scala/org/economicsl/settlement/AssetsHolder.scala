@@ -1,6 +1,7 @@
 package org.economicsl.settlement
 
 import akka.actor.{Actor, ActorLogging}
+import org.economicsl.auctions.Quantity
 
 import scala.util.{Failure, Success, Try}
 
@@ -8,36 +9,39 @@ import scala.util.{Failure, Success, Try}
 trait AssetsHolder {
   this: Actor with ActorLogging =>
 
+  type Assets = Map[Asset, Quantity]
+
   /* For now assume that AssetsHolderLike can take negative asset positions. */
-  val assets: mutable.Map[Asset, Double] = mutable.Map[Asset, Double]().withDefaultValue(0.0)
+  var assets: Assets = Map.empty[Asset, Quantity]
 
   /* Increments an actor's cash holdings. */
-  def hoard(amount: Double): Unit = {
-    assets(Currency) += amount
+  def hoard(amount: Quantity): Assets = {
+    val current = assets.getOrElse(Currency, Quantity(0))
+    assets.updated(Currency, current + amount)
   }
 
   /* Decrements an actor's cash holdings. */
-  def dishoard(amount: Double): Try[Payment] = {
-    if (assets(Currency) >= amount) {
-      assets(Currency) -= amount
-      Success(Payment(amount))
+  def dishoard(amount: Quantity): (Try[Payment], Assets) = {
+    val current = assets.getOrElse(Currency, Quantity(0))
+    if (current >= amount) {
+      (Success(Payment(amount)), assets.updated(Currency, current + amount))
     } else {
-      Failure(InsufficientFundsException())
+      (Failure(InsufficientFundsException()), assets)
     }
   }
 
   /* Increment actor's securities holdings. */
-  def accumulate(asset: Asset, quantity: Double): Unit = {
+  def accumulate(asset: Asset, quantity: Quantity): Assets = {
     assets(asset) += quantity
   }
 
   /* Decrement actor's securities holdings. */
-  def deccumulate(asset: Asset, quantity: Double): Try[Assets] = {
-    if (assets(asset) >= quantity) {
-      assets(asset) -= quantity
-      Success(Assets(asset, quantity))
+  def deccumulate(asset: Asset, quantity: Quantity): (Try[Assets], Assets) = {
+    val current = assets.getOrElse(asset, Quantity(0))
+    if (current >= quantity) {
+      (Success(Assets(asset, quantity)), assets.updated(asset, current - quantity))
     } else {
-      Failure(InsufficientAssetsException())
+      (Failure(InsufficientAssetsException()), assets)
     }
   }
 
