@@ -12,7 +12,7 @@ trait AssetsHolder {
   type Holdings = Map[Asset, Quantity]
 
   /* For now assume that AssetsHolderLike can take negative asset positions. */
-  var holdings: Holdings = Map.empty[Asset, Quantity]
+  var holdings: Holdings
 
   /* Increments an actor's cash holdings. */
   def hoard(amount: Quantity): Holdings = {

@@ -1,9 +1,15 @@
 package org.economicsl
 
-import org.economicsl.auctions.Quantity
+import akka.actor.ActorRef
 
 
 package object settlement {
+
+  // need some kind of type that combines a Fill with the ActorRefs associated with the buyer and seller.
+  type Buyer = ActorRef
+  type Seller = ActorRef
+  type SpotContract = (Buyer, Seller, Price, Quantity, Tradable)
+
 
   case class AssetsRequest(asset: Asset, quantity: Quantity)
 

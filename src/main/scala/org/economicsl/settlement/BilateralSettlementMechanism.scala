@@ -1,15 +1,11 @@
 package org.economicsl.settlement
 
-import org.economicsl.auctions.Tradable
-import org.economicsl.auctions.singleunit.Fill
-
 
 /** Bilateral clearing mechanism. */
-class BilateralSettlementMechanism[T <: Tradable] extends SettlementMechanism {
+class BilateralSettlementMechanism extends SettlementMechanism {
 
   val settlementMechanismBehavior: Receive = {
-    case fill: Fill[T] =>
-      context.actorOf(TransactionHandler.props(fill))
+    case contract: SpotContract => context.actorOf(SpotContractHandler.props(contract))
   }
 
   def receive: Receive = {

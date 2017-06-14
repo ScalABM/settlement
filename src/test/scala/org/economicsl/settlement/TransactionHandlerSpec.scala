@@ -71,7 +71,7 @@ class TransactionHandlerSpec
 
       When("TransactionHandler receives a PartialFill")
 
-      val transactionHandlerRef = TestActorRef(new TransactionHandler(fill))
+      val transactionHandlerRef = TestActorRef(new SpotContractHandler(fill))
 
       Then("TransactionHandler should send requests for payment and securities.")
 
@@ -93,7 +93,7 @@ class TransactionHandlerSpec
 
       When("TransactionHandler receives the TotalFill")
 
-      val transactionHandlerRef = TestActorRef(new TransactionHandler(fill))
+      val transactionHandlerRef = TestActorRef(new SpotContractHandler(fill))
 
       Then("TransactionHandler should send requests for payment and securities.")
 
@@ -116,7 +116,7 @@ class TransactionHandlerSpec
       val bidTradingParty = TestProbe()
       val fill = generateRandomPartialFill(askTradingParty.ref, bidTradingParty.ref)
 
-      val transactionHandlerRef = TestActorRef(new TransactionHandler(fill))
+      val transactionHandlerRef = TestActorRef(new SpotContractHandler(fill))
 
       val securitiesRequest = AssetsRequest(fill.instrument, fill.quantity)
       askTradingParty.expectMsg(securitiesRequest)
@@ -152,7 +152,7 @@ class TransactionHandlerSpec
       val bidTradingParty = TestProbe()
       val fill = generateRandomPartialFill(askTradingParty.ref, bidTradingParty.ref)
 
-      val transactionHandlerRef = TestActorRef(new TransactionHandler(fill))
+      val transactionHandlerRef = TestActorRef(new SpotContractHandler(fill))
 
       val securitiesRequest = AssetsRequest(fill.instrument, fill.quantity)
       askTradingParty.expectMsg(securitiesRequest)
@@ -188,7 +188,7 @@ class TransactionHandlerSpec
       val bidTradingParty = TestProbe()
       val fill = generateRandomPartialFill(askTradingParty.ref, bidTradingParty.ref)
 
-      val transactionHandlerRef = TestActorRef(new TransactionHandler(fill))
+      val transactionHandlerRef = TestActorRef(new SpotContractHandler(fill))
 
       val securitiesRequest = AssetsRequest(fill.instrument, fill.quantity)
       askTradingParty.expectMsg(securitiesRequest)
@@ -220,7 +220,7 @@ class TransactionHandlerSpec
       val bidTradingParty = TestProbe()
       val fill = generateRandomPartialFill(askTradingParty.ref, bidTradingParty.ref)
 
-      val transactionHandlerRef = TestActorRef(new TransactionHandler(fill))
+      val transactionHandlerRef = TestActorRef(new SpotContractHandler(fill))
 
       val securitiesRequest = AssetsRequest(fill.instrument, fill.quantity)
       askTradingParty.expectMsg(securitiesRequest)
@@ -253,7 +253,7 @@ class TransactionHandlerSpec
       val bidTradingParty = TestProbe()
       val fill = generateRandomPartialFill(askTradingParty.ref, bidTradingParty.ref)
 
-      val transactionHandlerRef = TestActorRef(new TransactionHandler(fill))
+      val transactionHandlerRef = TestActorRef(new SpotContractHandler(fill))
 
       val securitiesRequest = AssetsRequest(fill.instrument, fill.quantity)
       askTradingParty.expectMsg(securitiesRequest)
@@ -285,7 +285,7 @@ class TransactionHandlerSpec
       val bidTradingParty = TestProbe()
       val fill = generateRandomPartialFill(askTradingParty.ref, bidTradingParty.ref)
 
-      val transactionHandlerRef = TestActorRef(new TransactionHandler(fill))
+      val transactionHandlerRef = TestActorRef(new SpotContractHandler(fill))
 
       val securitiesRequest = AssetsRequest(fill.instrument, fill.quantity)
       askTradingParty.expectMsg(securitiesRequest)
@@ -317,7 +317,7 @@ class TransactionHandlerSpec
       val bidTradingParty = TestProbe()
       val fill = generateRandomPartialFill(askTradingParty.ref, bidTradingParty.ref)
 
-      val transactionHandlerRef = TestActorRef(new TransactionHandler(fill))
+      val transactionHandlerRef = TestActorRef(new SpotContractHandler(fill))
 
       val securitiesRequest = AssetsRequest(fill.instrument, fill.quantity)
       askTradingParty.expectMsg(securitiesRequest)
