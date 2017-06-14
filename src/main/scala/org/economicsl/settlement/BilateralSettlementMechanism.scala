@@ -1,5 +1,7 @@
 package org.economicsl.settlement
 
+import org.economicsl.settlement.contracts.{SpotContract, SpotContractHandler}
+
 
 /** Bilateral clearing mechanism. */
 class BilateralSettlementMechanism extends SettlementMechanism {

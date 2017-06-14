@@ -1,4 +1,4 @@
-package org.economicsl.settlement
+package org.economicsl.settlement.contracts
 
 import akka.actor.{Actor, ActorLogging}
 

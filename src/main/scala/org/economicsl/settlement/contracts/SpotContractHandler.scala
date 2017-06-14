@@ -1,8 +1,7 @@
-package org.economicsl.settlement
+package org.economicsl.settlement.contracts
 
 import akka.actor.{PoisonPill, Props}
-import org.economicsl.auctions.Tradable
-import org.economicsl.auctions.singleunit.Fill
+import org.economicsl.settlement._
 import play.api.libs.json.Json
 
 import scala.util.{Failure, Success, Try}
@@ -13,17 +12,16 @@ import scala.util.{Failure, Success, Try}
   * @author davidrpugh
   */
 class SpotContractHandler[T <: Tradable](contract: SpotContract) extends ContractHandler {
-
-  /* Primary constructor */
-  private[this] val (seller, buyer, price, quantity, tradable) = contract
-
-  seller ! AssetsRequest(tradable, quantity)
-  buyer ! PaymentRequest(price * quantity)  // units are currency!
+  
+  /* Executed as part of primary constructor */
+  private[this] val (buyer, seller) = (contract.issuer, contract.counterparty)
+  seller ! AssetsRequest.from(contract)
+  buyer ! PaymentRequest.from (contract)  // units are currency!
 
   /* Only evaluated if necessary! */
-  lazy val transaction = Transaction(fill)
+  lazy val transaction = Transaction(contract)
 
-  /** Behavior of a TransactionHandler after receiving the seller's response.
+  /** Behavior of a SpotContractHandler after receiving the seller's response.
     *
     * @param sellerResponse
     * @return a partial function that handles the buyer's response.
@@ -47,7 +45,7 @@ class SpotContractHandler[T <: Tradable](contract: SpotContract) extends Contrac
     }
   }
 
-  /** Behavior of a TransactionHandler after receiving the buyer's response.
+  /** Behavior of a SpotContractHandler after receiving the buyer's response.
     *
     * @param buyerResponse
     * @return partial function that handles the seller's response.
@@ -72,7 +70,7 @@ class SpotContractHandler[T <: Tradable](contract: SpotContract) extends Contrac
     }
   }
 
-  /** Behavior of a TransactionHandler.
+  /** Behavior of a SpotContractHandler.
     *
     * @return partial function that handles buyer and seller responses.
     */
@@ -94,8 +92,8 @@ class SpotContractHandler[T <: Tradable](contract: SpotContract) extends Contrac
 
 object SpotContractHandler {
 
-  def props[T <: Tradable](fill: Fill[T]): Props = {
-    Props(new SpotContractHandler(fill[T]))
+  def props(contract: SpotContract): Props = {
+    Props(new SpotContractHandler(contract))
   }
 
 }

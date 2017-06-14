@@ -1,6 +1,7 @@
 package org.economicsl.settlement
 
 import akka.actor.{ActorRef, Props}
+import org.economicsl.settlement.contracts.SpotContract
 
 
 /** Central counterparty (CCP) clearing mechanism.
@@ -38,7 +39,7 @@ class CCPSettlementMechanism extends SettlementMechanism with AssetsHolder {
     *         counterparties and the central counterparty.
     */
   def novate(contract: SpotContract): List[SpotContract] = {
-    List((self, contract._2, contract._3, contract._4, contract._5), (contract._1, self, contract._3, contract._4, contract._5))
+    List(contract.copy(issuer = self), contract.copy(counterparty = self))
   }
 
   def receive: Receive = {

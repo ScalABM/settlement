@@ -1,14 +1,12 @@
 package org.economicsl.settlement
 
-import akka.actor.{ActorRef, Props, ActorSystem}
-import akka.testkit.{TestProbe, TestActorRef, TestKit}
-import org.scalatest.{BeforeAndAfterAll, Matchers, GivenWhenThen, FeatureSpecLike}
+import akka.actor.{ActorSystem, Props}
+import akka.testkit.{TestActorRef, TestKit, TestProbe}
+import org.economicsl.settlement.contracts.SpotContract
+import org.scalatest.{BeforeAndAfterAll, FeatureSpecLike, GivenWhenThen, Matchers}
 
-import scala.util.Random
 
-
-class BilateralClearingMechanismSpec
-  extends TestKit(ActorSystem("NoiseTraderSpec"))
+class BilateralClearingMechanismSpec extends TestKit(ActorSystem("NoiseTraderSpec"))
   with FeatureSpecLike
   with GivenWhenThen
   with Matchers
@@ -17,38 +15,6 @@ class BilateralClearingMechanismSpec
   /** Shutdown actor system when finished. */
   override def afterAll(): Unit = {
     system.terminate()
-  }
-
-  def generateRandomPartialFill(askTradingPartyRef: ActorRef,
-                                bidTradingPartyRef: ActorRef,
-                                instrument: Stock,
-                                maxPrice: Double = 1e6,
-                                maxQuantity: Int = 10000): FillLike = {
-    val price = generateRandomPrice()
-    val quantity = generateRandomQuantity()
-
-    PartialFill(askTradingPartyRef, bidTradingPartyRef, instrument, price, quantity)
-  }
-
-  def generateRandomTotalFill(askTradingPartyRef: ActorRef,
-                              bidTradingPartyRef: ActorRef,
-                              instrument: Stock,
-                              maxPrice: Double = 1e6,
-                              maxQuantity: Int = 10000): FillLike = {
-
-    val price = generateRandomPrice()
-    val quantity = generateRandomQuantity()
-
-    TotalFill(askTradingPartyRef, bidTradingPartyRef, instrument, price, quantity)
-
-  }
-
-  def generateRandomPrice(maxPrice: Double = 1000.0): Double = {
-    Random.nextDouble() * maxPrice
-  }
-
-  def generateRandomQuantity(maxQuantity: Int = 10000): Int = {
-    Random.nextInt(maxQuantity)
   }
 
   feature("BilateralClearingMechanism should process transactions.") {
@@ -60,20 +26,20 @@ class BilateralClearingMechanismSpec
 
       val askTradingParty = TestProbe()
       val bidTradingParty = TestProbe()
-      val fill = generateRandomPartialFill(askTradingParty.ref, bidTradingParty.ref, testInstrument)
+      val contract: SpotContract = ???
 
       When("BilateralClearingMechanism receives a FillLike")
 
-      clearingMechanism ! fill
+      clearingMechanism ! contract
 
       Then("AskTradingParty should receive a request for Securities")
 
-      val securitiesRequest = AssetsRequest(fill.instrument, fill.quantity)
+      val securitiesRequest = AssetsRequest.from(contract)
       askTradingParty.expectMsg(securitiesRequest)
 
       Then("BidTradingParty should receive a request for Payment")
 
-      val paymentRequest = PaymentRequest(fill.price * fill.quantity)
+      val paymentRequest = PaymentRequest.from(contract)
       bidTradingParty.expectMsg(paymentRequest)
 
     }
@@ -83,20 +49,20 @@ class BilateralClearingMechanismSpec
 
       val askTradingParty = TestProbe()
       val bidTradingParty = TestProbe()
-      val fill = generateRandomTotalFill(askTradingParty.ref, bidTradingParty.ref, testInstrument)
+      val contract: SpotContract = ???
 
       When("BilateralClearingMechanism receives a FillLike")
 
-      clearingMechanism ! fill
+      clearingMechanism ! contract
 
       Then("AskTradingParty should receive a request for Securities")
 
-      val securitiesRequest = AssetsRequest(fill.instrument, fill.quantity)
+      val securitiesRequest = AssetsRequest.from(contract)
       askTradingParty.expectMsg(securitiesRequest)
 
       Then("BidTradingParty should receive a request for Payment")
 
-      val paymentRequest = PaymentRequest(fill.price * fill.quantity)
+      val paymentRequest = PaymentRequest.from(contract)
       bidTradingParty.expectMsg(paymentRequest)
 
     }

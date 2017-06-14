@@ -1,15 +1,14 @@
 package org.economicsl.settlement
 
-import akka.actor.{ActorRef, ActorSystem}
-import akka.testkit.{TestActorRef, TestProbe, TestKit}
-import models._
-import org.scalatest.{BeforeAndAfterAll, Matchers, GivenWhenThen, FeatureSpecLike}
+import akka.actor.ActorSystem
+import akka.testkit.{TestActorRef, TestKit, TestProbe}
+import org.economicsl.settlement.contracts.SpotContract
+import org.scalatest.{BeforeAndAfterAll, FeatureSpecLike, GivenWhenThen, Matchers}
 
-import scala.util.{Success, Random}
+import scala.util.Success
 
 
-class CCPClearingMechanismSpec
-  extends TestKit(ActorSystem("CCPClearingMechanismSpec"))
+class CCPClearingMechanismSpec extends TestKit(ActorSystem("CCPClearingMechanismSpec"))
   with FeatureSpecLike
   with GivenWhenThen
   with Matchers
@@ -19,39 +18,6 @@ class CCPClearingMechanismSpec
   override def afterAll(): Unit = {
     system.terminate()
   }
-
-  def generateRandomPartialFill(askTradingPartyRef: ActorRef,
-                                bidTradingPartyRef: ActorRef,
-                                instrument: Stock,
-                                maxPrice: Double = 1e6,
-                                maxQuantity: Int = 10000): FillLike = {
-    val price = generateRandomPrice()
-    val quantity = generateRandomQuantity()
-
-    PartialFill(askTradingPartyRef, bidTradingPartyRef, instrument, price, quantity)
-  }
-
-  def generateRandomTotalFill(askTradingPartyRef: ActorRef,
-                              bidTradingPartyRef: ActorRef,
-                              instrument: Stock,
-                              maxPrice: Double = 1e6,
-                              maxQuantity: Int = 10000): FillLike = {
-
-    val price = generateRandomPrice()
-    val quantity = generateRandomQuantity()
-
-    TotalFill(askTradingPartyRef, bidTradingPartyRef, instrument, price, quantity)
-
-  }
-
-  def generateRandomPrice(maxPrice: Double = 1000.0): Double = {
-    Random.nextDouble() * maxPrice
-  }
-
-  def generateRandomQuantity(maxQuantity: Int = 10000): Int = {
-    Random.nextInt(maxQuantity)
-  }
-
 
   feature("CCPClearingMechanism should process transactions.") {
 
@@ -65,24 +31,24 @@ class CCPClearingMechanismSpec
 
     scenario("CCPClearingMechanism receives a PartialFill.") {
 
-      val fill = generateRandomPartialFill(askTradingParty.ref, bidTradingParty.ref, testInstrument)
+      val contract: SpotContract = ???
 
       // store initial holdings of cash and securities
-      val clearingMechanismInitialSecurities = clearingMechanism.assets(testInstrument)
-      val clearingMechanismInitialCash = clearingMechanism.assets(Currency)
+      val clearingMechanismInitialSecurities = clearingMechanism.holdings(testInstrument)
+      val clearingMechanismInitialCash = clearingMechanism.holdings(Currency)
 
       When("CCPClearingMechanism receives a PartialFill")
 
-      clearingMechanismRef ! fill
+      clearingMechanismRef ! contract
 
       Then("AskTradingParty should receive a request for Securities")
 
-      askTradingParty.expectMsg(AssetsRequest(fill.instrument, fill.quantity))
-      askTradingParty.reply(Success(Assets(fill.instrument, fill.quantity)))
+      askTradingParty.expectMsg(AssetsRequest.from(contract))
+      askTradingParty.reply(Success(Assets(contract.instrument, contract.quantity)))
 
       Then("BidTradingParty should receive a request for Payment")
 
-      val paymentAmount = fill.price * fill.quantity
+      val paymentAmount = contract.price * contract.quantity
       bidTradingParty.expectMsg(PaymentRequest(paymentAmount))
       bidTradingParty.reply(Success(Payment(paymentAmount)))
 
@@ -92,38 +58,38 @@ class CCPClearingMechanismSpec
 
       Then("BidTradingParty should receive a Securities")
 
-      bidTradingParty.expectMsg(Assets(fill.instrument, fill.quantity))
+      bidTradingParty.expectMsg(Assets(contract.instrument, contract.quantity))
 
       Then("CCPClearingMechanism securities holdings should remain unchanged.")
 
-      clearingMechanism.assets(testInstrument) should be(clearingMechanismInitialSecurities)
+      clearingMechanism.holdings(testInstrument) should be(clearingMechanismInitialSecurities)
 
       Then("CCPClearingMechanism cash holdings should remain unchanged.")
 
-      clearingMechanism.assets(Currency) should be(clearingMechanismInitialCash)
+      clearingMechanism.holdings(Currency) should be(clearingMechanismInitialCash)
 
     }
 
     scenario("CCPClearingMechanism receives a TotalFill.") {
 
-      val fill = generateRandomTotalFill(askTradingParty.ref, bidTradingParty.ref, testInstrument)
+      val contract = generateRandomTotalFill(askTradingParty.ref, bidTradingParty.ref, testInstrument)
 
       // store initial holdings of cash and securities
-      val clearingMechanismInitialSecurities = clearingMechanism.assets(testInstrument)
-      val clearingMechanismInitialCash = clearingMechanism.assets(Currency)
+      val clearingMechanismInitialSecurities = clearingMechanism.holdings(testInstrument)
+      val clearingMechanismInitialCash = clearingMechanism.holdings(Currency)
 
       When("CCPClearingMechanism receives a PartialFill")
 
-      clearingMechanismRef ! fill
+      clearingMechanismRef ! contract
 
       Then("AskTradingParty should receive a request for Securities")
 
-      askTradingParty.expectMsg(AssetsRequest(fill.instrument, fill.quantity))
-      askTradingParty.reply(Success(Assets(fill.instrument, fill.quantity)))
+      askTradingParty.expectMsg(AssetsRequest.from(contract))
+      askTradingParty.reply(Success(Assets(contract.instrument, contract.quantity)))
 
       Then("BidTradingParty should receive a request for Payment")
 
-      val paymentAmount = fill.price * fill.quantity
+      val paymentAmount = contract.price * contract.quantity
       bidTradingParty.expectMsg(PaymentRequest(paymentAmount))
       bidTradingParty.reply(Success(Payment(paymentAmount)))
 
@@ -133,15 +99,15 @@ class CCPClearingMechanismSpec
 
       Then("BidTradingParty should receive a Securities")
 
-      bidTradingParty.expectMsg(Assets(fill.instrument, fill.quantity))
+      bidTradingParty.expectMsg(Assets(contract.instrument, contract.quantity))
 
       Then("CCPClearingMechanism securities holdings should remain unchanged.")
 
-      clearingMechanism.assets(testInstrument) should be(clearingMechanismInitialSecurities)
+      clearingMechanism.holdings(testInstrument) should be(clearingMechanismInitialSecurities)
 
       Then("CCPClearingMechanism cash holdings should remain unchanged.")
 
-      clearingMechanism.assets(Currency) should be(clearingMechanismInitialCash)
+      clearingMechanism.holdings(Currency) should be(clearingMechanismInitialCash)
 
     }
 

@@ -1,5 +1,6 @@
 package org.economicsl.settlement
 
+import org.economicsl.settlement.contracts.SpotContract
 import play.api.libs.json.{Json, Writes}
 
 

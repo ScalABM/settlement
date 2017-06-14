@@ -29,6 +29,10 @@ case class Price(value: Long) extends AnyVal {
     Price(value + that.value)
   }
 
+  def * (quantity: Quantity): Long = {
+    value * quantity.value
+  }
+
 }
 
 

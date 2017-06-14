@@ -1,7 +1,6 @@
 package org.economicsl.settlement
 
 import akka.actor.{Actor, ActorLogging}
-import org.economicsl.auctions.Quantity
 
 import scala.util.{Failure, Success, Try}
 
