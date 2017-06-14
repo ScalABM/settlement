@@ -1,6 +1,6 @@
 package org.economicsl.settlement
 
-import akka.actor.{Actor, ActorLogging, PoisonPill, Props}
+import akka.actor.{PoisonPill, Props}
 import org.economicsl.auctions.Tradable
 import org.economicsl.auctions.singleunit.Fill
 
@@ -11,7 +11,7 @@ import scala.util.{Failure, Success, Try}
   *
   * @param fill
   */
-class TransactionHandler[T <: Tradable](fill: Fill[T]) extends Actor with ActorLogging {
+class TransactionHandler[T <: Tradable](fill: Fill[T]) extends ContractHandler {
 
   /* Primary constructor */
   val seller = fill.askOrder.issuer
@@ -31,7 +31,6 @@ class TransactionHandler[T <: Tradable](fill: Fill[T]) extends Actor with ActorL
   def awaitingBuyerResponse(sellerResponse: Try[Assets]): Receive = sellerResponse match {
     case Success(assets) => {  // partial function for handling buyer response given successful seller response
       case Success(payment) =>
-        log.info(s",${System.nanoTime()}" + transaction.toString)
         buyer ! assets
         seller ! payment
         self ! PoisonPill
@@ -56,7 +55,6 @@ class TransactionHandler[T <: Tradable](fill: Fill[T]) extends Actor with ActorL
   def awaitingSellerResponse(buyerResponse: Try[Payment]): Receive = buyerResponse match {
     case Success(payment) => {  // partial function for handling seller response given successful buyer response
       case Success(assets) =>
-        log.info(s",${System.nanoTime()}" + transaction.toString)
         buyer ! assets
         seller ! payment
         self ! PoisonPill

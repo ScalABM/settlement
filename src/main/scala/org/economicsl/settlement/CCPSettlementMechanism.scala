@@ -1,5 +1,9 @@
 package org.economicsl.settlement
 
+import akka.actor.{ActorRef, Props}
+import org.economicsl.auctions.Tradable
+import org.economicsl.auctions.singleunit.Fill
+
 
 /** Central counterparty (CCP) clearing mechanism.
   *
@@ -9,7 +13,7 @@ package org.economicsl.settlement
   * a counterparty on every transaction the CCP effectively assumes all
   * counterparty risk.
   */
-class CCPSettlementMechanism extends SettlementMechanism with AssetsHolder {
+class CCPSettlementMechanism[T <: Tradable] extends SettlementMechanism with AssetsHolder {
 
   /* For now assume that central counterparty has "deep pockets". */
   override val holdings: mutable.Map[Asset, Double] = {
@@ -17,11 +21,11 @@ class CCPSettlementMechanism extends SettlementMechanism with AssetsHolder {
   }
 
   /* BilateralClearingMechanism can be used to process novated fills. */
-  val bilateralClearingMechanism: ActorRef = context.actorOf(Props[BilateralSettlementMechanism])
+  val bilateralClearingMechanism: ActorRef = context.actorOf(Props[BilateralSettlementMechanism[T]])
 
   /** Central counter-party (CCP) clearing mechanism behavior. */
   val settlementMechanismBehavior: Receive = {
-    case fill: FillLike =>
+    case fill: Fill[T] =>
       val novatedFills = novate(fill)
       novatedFills foreach(novatedFill => bilateralClearingMechanism ! novatedFill)
   }
@@ -37,13 +41,9 @@ class CCPSettlementMechanism extends SettlementMechanism with AssetsHolder {
     * @return a list of two FillLikes - one between each of the original trading
     *         counterparties and the central counterparty.
     */
-  def novate(fill: FillLike): List[FillLike] = fill match {
-    case fill: PartialFill =>
-      List(PartialFill(self, fill.bidTradingPartyRef, fill.instrument, fill.price, fill.quantity),
-        PartialFill(fill.askTradingPartyRef, self, fill.instrument, fill.price, fill.quantity))
-    case fill: TotalFill =>
-      List(TotalFill(self, fill.bidTradingPartyRef, fill.instrument, fill.price, fill.quantity),
-        TotalFill(fill.askTradingPartyRef, self, fill.instrument, fill.price, fill.quantity))
+  def novate(fill: Fill[T]): List[Fill[T]] = {
+    List(Fill(self, fill.bidTradingPartyRef, fill.instrument, fill.price, fill.quantity),
+         Fill(fill.askTradingPartyRef, self, fill.instrument, fill.price, fill.quantity))
   }
 
   def receive: Receive = {

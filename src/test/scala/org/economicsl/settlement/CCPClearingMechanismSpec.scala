@@ -8,15 +8,16 @@ import org.scalatest.{BeforeAndAfterAll, Matchers, GivenWhenThen, FeatureSpecLik
 import scala.util.{Success, Random}
 
 
-class CCPClearingMechanismSpec extends TestKit(ActorSystem("CCPClearingMechanismSpec")) with
-  FeatureSpecLike with
-  GivenWhenThen with
-  Matchers with
-  BeforeAndAfterAll {
+class CCPClearingMechanismSpec
+  extends TestKit(ActorSystem("CCPClearingMechanismSpec"))
+  with FeatureSpecLike
+  with GivenWhenThen
+  with Matchers
+  with BeforeAndAfterAll {
 
   /** Shutdown actor system when finished. */
   override def afterAll(): Unit = {
-    system.shutdown()
+    system.terminate()
   }
 
   def generateRandomPartialFill(askTradingPartyRef: ActorRef,
@@ -56,7 +57,7 @@ class CCPClearingMechanismSpec extends TestKit(ActorSystem("CCPClearingMechanism
 
     val testInstrument = Stock("APPL")
 
-    val clearingMechanismRef = TestActorRef(new CCPClearingMechanism)
+    val clearingMechanismRef = TestActorRef(new CCPSettlementMechanism)
     val clearingMechanism = clearingMechanismRef.underlyingActor
 
     val askTradingParty = TestProbe()

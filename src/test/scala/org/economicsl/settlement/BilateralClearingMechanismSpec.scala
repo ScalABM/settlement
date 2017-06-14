@@ -2,21 +2,21 @@ package org.economicsl.settlement
 
 import akka.actor.{ActorRef, Props, ActorSystem}
 import akka.testkit.{TestProbe, TestActorRef, TestKit}
-import models._
 import org.scalatest.{BeforeAndAfterAll, Matchers, GivenWhenThen, FeatureSpecLike}
 
 import scala.util.Random
 
 
-class BilateralClearingMechanismSpec extends TestKit(ActorSystem("NoiseTraderSpec")) with
-  FeatureSpecLike with
-  GivenWhenThen with
-  Matchers with
-  BeforeAndAfterAll {
+class BilateralClearingMechanismSpec
+  extends TestKit(ActorSystem("NoiseTraderSpec"))
+  with FeatureSpecLike
+  with GivenWhenThen
+  with Matchers
+  with BeforeAndAfterAll {
 
   /** Shutdown actor system when finished. */
   override def afterAll(): Unit = {
-    system.shutdown()
+    system.terminate()
   }
 
   def generateRandomPartialFill(askTradingPartyRef: ActorRef,
@@ -54,7 +54,7 @@ class BilateralClearingMechanismSpec extends TestKit(ActorSystem("NoiseTraderSpe
   feature("BilateralClearingMechanism should process transactions.") {
 
     val testInstrument = Stock("APPL")
-    val clearingMechanism = TestActorRef(Props[BilateralClearingMechanism])
+    val clearingMechanism = TestActorRef(Props[BilateralSettlementMechanism])
 
     scenario("BilateralClearingMechanism receives a PartialFill.") {
 

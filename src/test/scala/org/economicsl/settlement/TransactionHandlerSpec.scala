@@ -7,15 +7,16 @@ import org.scalatest.{BeforeAndAfterAll, Matchers, GivenWhenThen, FeatureSpecLik
 
 import scala.util.{Failure, Success, Random}
 
-class TransactionHandlerSpec extends TestKit(ActorSystem("TransactionHandlerSpec")) with
-  FeatureSpecLike with
-  GivenWhenThen with
-  Matchers with
-  BeforeAndAfterAll {
+class TransactionHandlerSpec
+  extends TestKit(ActorSystem("TransactionHandlerSpec"))
+  with FeatureSpecLike
+  with GivenWhenThen
+  with Matchers
+  with BeforeAndAfterAll {
 
   /** Shutdown actor system when finished. */
   override def afterAll(): Unit = {
-    system.shutdown()
+    system.terminate()
   }
 
   def generateRandomAmount(maxAmount: Double = 1e6): Double = {

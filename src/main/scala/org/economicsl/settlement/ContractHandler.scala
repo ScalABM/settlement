@@ -1,8 +1,6 @@
 package org.economicsl.settlement
 
-/**
-  * Created by pughdr on 6/14/2017.
-  */
-trait ContractHandler {
+import akka.actor.{Actor, ActorLogging}
 
-}
+
+trait ContractHandler extends Actor with ActorLogging
