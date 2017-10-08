@@ -1,4 +1,4 @@
 package org.economicsl.settlement
 
 
-trait Asset
+package object actors

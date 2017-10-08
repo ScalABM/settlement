@@ -13,23 +13,20 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package org.economicsl.settlement
-
-import play.api.libs.json.{JsValue, Json, Writes}
+package org.economicsl.settlement.actors
 
 
-/** Trait used to indicate that an object can be traded via an auction.
+/** Stub `SettlementActor` that logs contracts.
   *
-  * @author davidrpugh
-  * @since 0.1.0
+  * @todo this Actor should be moved down to the esl-settlement.
   */
-trait Tradable extends Serializable
+class LoggingSettlementActor
+  extends StackableActor {
 
+  wrappedBecome(contractLogger)
 
-object Tradable {
-
-  implicit val writes: Writes[Tradable] = new Writes[Tradable] {
-    def writes(o: Tradable): JsValue = Json.obj()
+  def contractLogger: Receive = {
+    case contract: Contract => log.info(contract.toString)
   }
 
 }

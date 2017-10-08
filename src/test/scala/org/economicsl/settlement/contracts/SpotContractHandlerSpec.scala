@@ -3,6 +3,7 @@ package org.economicsl.settlement.contracts
 import akka.actor.ActorSystem
 import akka.testkit.{TestActorRef, TestKit, TestProbe}
 import org.economicsl.settlement._
+import org.economicsl.settlement.actors.SpotContractHandler
 import org.scalatest.{BeforeAndAfterAll, FeatureSpecLike, GivenWhenThen, Matchers}
 
 import scala.util.{Failure, Success}
@@ -35,10 +36,10 @@ class SpotContractHandlerSpec extends TestKit(ActorSystem("SpotContractHandlerSp
 
       Then("SpotContractHandler should send requests for payment and securities.")
 
-      val securitiesRequest = AssetsRequest.from(contract)
+      val securitiesRequest = RequestAsset.from(contract)
       askTradingParty.expectMsg(securitiesRequest)
 
-      val paymentRequest = PaymentRequest.from(contract)
+      val paymentRequest = RequestPayment.from(contract)
       bidTradingParty.expectMsg(paymentRequest)
 
     }
@@ -57,10 +58,10 @@ class SpotContractHandlerSpec extends TestKit(ActorSystem("SpotContractHandlerSp
 
       Then("SpotContractHandler should send requests for payment and securities.")
 
-      val securitiesRequest = AssetsRequest.from(contract)
+      val securitiesRequest = RequestAsset.from(contract)
       askTradingParty.expectMsg(securitiesRequest)
 
-      val paymentRequest = PaymentRequest.from(contract)
+      val paymentRequest = RequestPayment.from(contract)
       bidTradingParty.expectMsg(paymentRequest)
 
     }
@@ -78,10 +79,10 @@ class SpotContractHandlerSpec extends TestKit(ActorSystem("SpotContractHandlerSp
 
       val transactionHandlerRef = TestActorRef(new SpotContractHandler(contract))
 
-      val securitiesRequest = AssetsRequest.from(contract)
+      val securitiesRequest = RequestAsset.from(contract)
       askTradingParty.expectMsg(securitiesRequest)
 
-      val paymentRequest = PaymentRequest.from(contract)
+      val paymentRequest = RequestPayment.from(contract)
       bidTradingParty.expectMsg(paymentRequest)
 
       When("SpotContractHandler receives Payment")
@@ -91,7 +92,7 @@ class SpotContractHandlerSpec extends TestKit(ActorSystem("SpotContractHandlerSp
 
       When("SpotContractHandler receives Securities")
 
-      val securities = Assets(contract.instrument, contract.quantity)
+      val securities = Assets(contract.tradable, contract.quantity)
       transactionHandlerRef ! Success(securities)
 
       Then("SpotContractHandler should forward Payment to the seller")
@@ -114,10 +115,10 @@ class SpotContractHandlerSpec extends TestKit(ActorSystem("SpotContractHandlerSp
 
       val transactionHandlerRef = TestActorRef(new SpotContractHandler(contract))
 
-      val securitiesRequest = AssetsRequest.from(contract)
+      val securitiesRequest = RequestAsset.from(contract)
       askTradingParty.expectMsg(securitiesRequest)
 
-      val paymentRequest = PaymentRequest.from(contract)
+      val paymentRequest = RequestPayment.from(contract)
       bidTradingParty.expectMsg(paymentRequest)
 
       When("SpotContractHandler receives Securities")
@@ -150,10 +151,10 @@ class SpotContractHandlerSpec extends TestKit(ActorSystem("SpotContractHandlerSp
 
       val transactionHandlerRef = TestActorRef(new SpotContractHandler(contract))
 
-      val securitiesRequest = AssetsRequest.from(contract)
+      val securitiesRequest = RequestAsset.from(contract)
       askTradingParty.expectMsg(securitiesRequest)
 
-      val paymentRequest = PaymentRequest.from(contract)
+      val paymentRequest = RequestPayment.from(contract)
       bidTradingParty.expectMsg(paymentRequest)
 
       When("SpotContractHandler receives InsufficientFundsException")
@@ -182,10 +183,10 @@ class SpotContractHandlerSpec extends TestKit(ActorSystem("SpotContractHandlerSp
 
       val transactionHandlerRef = TestActorRef(new SpotContractHandler(contract))
 
-      val securitiesRequest = AssetsRequest.from(contract)
+      val securitiesRequest = RequestAsset.from(contract)
       askTradingParty.expectMsg(securitiesRequest)
 
-      val paymentRequest = PaymentRequest.from(contract)
+      val paymentRequest = RequestPayment.from(contract)
       bidTradingParty.expectMsg(paymentRequest)
 
       When("SpotContractHandler receives Securities")
@@ -215,10 +216,10 @@ class SpotContractHandlerSpec extends TestKit(ActorSystem("SpotContractHandlerSp
 
       val transactionHandlerRef = TestActorRef(new SpotContractHandler(contract))
 
-      val securitiesRequest = AssetsRequest.from(contract)
+      val securitiesRequest = RequestAsset.from(contract)
       askTradingParty.expectMsg(securitiesRequest)
 
-      val paymentRequest = PaymentRequest.from(contract)
+      val paymentRequest = RequestPayment.from(contract)
       bidTradingParty.expectMsg(paymentRequest)
 
       When("SpotContractHandler receives InsufficientAssetsException")
@@ -247,10 +248,10 @@ class SpotContractHandlerSpec extends TestKit(ActorSystem("SpotContractHandlerSp
 
       val transactionHandlerRef = TestActorRef(new SpotContractHandler(contract))
 
-      val securitiesRequest = AssetsRequest.from(contract)
+      val securitiesRequest = RequestAsset.from(contract)
       askTradingParty.expectMsg(securitiesRequest)
 
-      val paymentRequest = PaymentRequest.from(contract)
+      val paymentRequest = RequestPayment.from(contract)
       bidTradingParty.expectMsg(paymentRequest)
 
       When("SpotContractHandler receives Payment")
@@ -279,10 +280,10 @@ class SpotContractHandlerSpec extends TestKit(ActorSystem("SpotContractHandlerSp
 
       val transactionHandlerRef = TestActorRef(new SpotContractHandler(contract))
 
-      val securitiesRequest = AssetsRequest.from(contract)
+      val securitiesRequest = RequestAsset.from(contract)
       askTradingParty.expectMsg(securitiesRequest)
 
-      val paymentRequest = PaymentRequest.from(contract)
+      val paymentRequest = RequestPayment.from(contract)
       bidTradingParty.expectMsg(paymentRequest)
 
       When("SpotContractHandler receives InsufficientFundsException")

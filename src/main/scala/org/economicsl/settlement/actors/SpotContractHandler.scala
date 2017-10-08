@@ -1,7 +1,8 @@
-package org.economicsl.settlement.contracts
+package org.economicsl.settlement.actors
 
-import akka.actor.{PoisonPill, Props}
+import akka.actor.{ActorIdentity, PoisonPill, Props}
 import org.economicsl.settlement._
+import org.economicsl.settlement.contracts.SpotContract
 import play.api.libs.json.Json
 
 import scala.util.{Failure, Success, Try}
@@ -11,15 +12,18 @@ import scala.util.{Failure, Success, Try}
   *
   * @author davidrpugh
   */
-class SpotContractHandler[T <: Tradable](contract: SpotContract) extends ContractHandler {
-  
-  /* Executed as part of primary constructor */
-  private[this] val (buyer, seller) = (contract.issuer, contract.counterparty)
-  seller ! AssetsRequest.from(contract)
-  buyer ! PaymentRequest.from (contract)  // units are currency!
+class SpotContractHandler(contract: SpotContract)
+    extends ContractHandler {
 
-  /* Only evaluated if necessary! */
-  lazy val transaction = Transaction(contract)
+  context.parent ! RequestActorIdentity("issuer", contract.issuer)
+  context.parent ! RequestActorIdentity("counterparty", contract.issuer)
+
+  def identifying: Receive = {
+    case ActorIdentity("issuer", maybeActorRef) =>
+      maybeActorRef.foreach(actorRef => context.become(identifyingCounterparty(actorRef)))
+    case ActorIdentity("counterparty", maybeActorRef) =>
+      maybeActorRef.foreach(actorRef => context.become(identifyingIssuer(actorRef)))
+  }
 
   /** Behavior of a SpotContractHandler after receiving the seller's response.
     *
@@ -32,15 +36,15 @@ class SpotContractHandler[T <: Tradable](contract: SpotContract) extends Contrac
         buyer ! assets
         seller ! payment
         self ! PoisonPill
-      case Failure(ex) =>
+      case Failure(_) =>
         seller ! assets  // refund assets to seller
         self ! PoisonPill
     }
-    case Failure(exception) => {
+    case Failure(_) => {
       case Success(payment) =>  // refund payment to buyer
         buyer ! payment
         self ! PoisonPill
-      case Failure(otherException) => // nothing to refund
+      case Failure(_) => // nothing to refund
         self ! PoisonPill
     }
   }
@@ -57,15 +61,15 @@ class SpotContractHandler[T <: Tradable](contract: SpotContract) extends Contrac
         seller ! payment
         self ! PoisonPill
         log.info(Json.toJson(transaction).toString)
-      case Failure(exception) =>
+      case Failure(_) =>
         buyer ! payment  // refund payment to buyer
         self ! PoisonPill
     }
-    case Failure(exception) => {
+    case Failure(_) => {
       case Success(assets) =>  // refund assets to seller
         seller ! assets
         self ! PoisonPill
-      case Failure(otherException) =>  // nothing to refund
+      case Failure(_) =>  // nothing to refund
         self ! PoisonPill
     }
   }
@@ -76,8 +80,8 @@ class SpotContractHandler[T <: Tradable](contract: SpotContract) extends Contrac
     */
   def receive: Receive = {
 
-    case Success(Payment(amount)) =>
-      context.become(awaitingSellerResponse(Success(Payment(amount))))
+    case Success(Payment(currency, amount)) =>
+      context.become(awaitingSellerResponse(Success(Payment(currency, amount))))
     case Failure(InsufficientFundsException(msg)) =>
       context.become(awaitingSellerResponse(Failure(InsufficientFundsException(msg))))
     case Success(Assets(tradable, quantity)) =>

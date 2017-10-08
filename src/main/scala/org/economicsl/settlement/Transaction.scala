@@ -1,15 +1,9 @@
 package org.economicsl.settlement
 
-import org.economicsl.settlement.contracts.SpotContract
-import play.api.libs.json.{Json, Writes}
+import java.util.UUID
+
+import org.economicsl.core.Currency
 
 
 /** Represents a cleared transaction between a buyer and a seller. */
-case class Transaction(contract: SpotContract)
-
-
-object Transaction {
-
-  implicit val writes: Writes[Transaction] = Json.writes[Transaction]
-
-}
+case class Transaction(from: UUID, to: UUID, value: Currency)

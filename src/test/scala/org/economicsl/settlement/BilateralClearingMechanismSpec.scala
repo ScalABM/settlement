@@ -2,6 +2,7 @@ package org.economicsl.settlement
 
 import akka.actor.{ActorSystem, Props}
 import akka.testkit.{TestActorRef, TestKit, TestProbe}
+import org.economicsl.settlement.actors.BilateralSettlementServiceActor
 import org.economicsl.settlement.contracts.SpotContract
 import org.scalatest.{BeforeAndAfterAll, FeatureSpecLike, GivenWhenThen, Matchers}
 
@@ -20,7 +21,7 @@ class BilateralClearingMechanismSpec extends TestKit(ActorSystem("NoiseTraderSpe
   feature("BilateralClearingMechanism should process transactions.") {
 
     val testInstrument = Stock("APPL")
-    val clearingMechanism = TestActorRef(Props[BilateralSettlementMechanism])
+    val clearingMechanism = TestActorRef(Props[BilateralSettlementServiceActor])
 
     scenario("BilateralClearingMechanism receives a PartialFill.") {
 
@@ -34,12 +35,12 @@ class BilateralClearingMechanismSpec extends TestKit(ActorSystem("NoiseTraderSpe
 
       Then("AskTradingParty should receive a request for Securities")
 
-      val securitiesRequest = AssetsRequest.from(contract)
+      val securitiesRequest = RequestAsset.from(contract)
       askTradingParty.expectMsg(securitiesRequest)
 
       Then("BidTradingParty should receive a request for Payment")
 
-      val paymentRequest = PaymentRequest.from(contract)
+      val paymentRequest = RequestPayment.from(contract)
       bidTradingParty.expectMsg(paymentRequest)
 
     }
@@ -57,12 +58,12 @@ class BilateralClearingMechanismSpec extends TestKit(ActorSystem("NoiseTraderSpe
 
       Then("AskTradingParty should receive a request for Securities")
 
-      val securitiesRequest = AssetsRequest.from(contract)
+      val securitiesRequest = RequestAsset.from(contract)
       askTradingParty.expectMsg(securitiesRequest)
 
       Then("BidTradingParty should receive a request for Payment")
 
-      val paymentRequest = PaymentRequest.from(contract)
+      val paymentRequest = RequestPayment.from(contract)
       bidTradingParty.expectMsg(paymentRequest)
 
     }
