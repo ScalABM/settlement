@@ -14,8 +14,13 @@ class BilateralSettlementService private(
 
   def settle(contract: SpotContract): Try[(BilateralSettlementService, Block)] = {
     val buyerResponse: Try[(SettlementParticipant, Payment)] = participants.get(contract.issuer).flatMap(buyer => buyer.dishoard(???))
-    val sellerResponse: Try[(SettlementParticipant, Assets)] = ???
+    val sellerResponse: Try[(SettlementParticipant, Assets)] = participants.get(contract.counterparty).flatMap(seller => seller.deccumulate(???))
 
+    buyerResponse.flatMap { case (buyer, payment) =>
+      sellerResponse.map { case (seller, assets) =>
+        withParticipant(seller.hoard(payment)).withParticipant(buyer.accumulate(assets))
+      }
+    }
   }
 
   /** Factory method used to delegate instance creation to sub-classes. */

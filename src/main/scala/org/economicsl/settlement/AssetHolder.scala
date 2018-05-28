@@ -9,10 +9,10 @@ import scala.util.{Failure, Success, Try}
 trait AssetHolder[A <: AssetHolder[A]] {
 
   /* Increments "cash" holdings. */
-  def hoard(currency: Security, amount: Quantity): A = {
-    val current = holdings.getOrElse(currency.uuid, Quantity.zero)
-    val updatedHoldings = holdings.updated(currency.uuid, current + amount)
-    withHoldings(updatedHoldings)
+  def hoard(payment: Payment): A = {
+    val currencyHoldings = holdings.getOrElse(payment.currency.uuid, Quantity.zero)
+    val updatedCurrencyHoldings = holdings.updated(payment.currency.uuid, currencyHoldings + payment.quantity)
+    withHoldings(updatedCurrencyHoldings)
   }
 
   /* Decrements "cash" holdings. */
@@ -27,7 +27,7 @@ trait AssetHolder[A <: AssetHolder[A]] {
   }
 
   /* Increments tradable asset holdings. */
-  def accumulate(asset: Tradable, quantity: Quantity): A = {
+  def accumulate(assets: Assets): A = {
     val current = holdings.getOrElse(asset.uuid, Quantity.zero)
     val updatedHoldings = holdings.updated(asset.uuid, current + quantity)
     withHoldings(updatedHoldings)

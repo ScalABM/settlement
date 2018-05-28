@@ -7,7 +7,8 @@ import java.util.UUID
   * @author davidrpugh
   * @since 0.1.0
   */
-trait SettlementParticipant {
+trait SettlementParticipant
+  extends AssetHolder[SettlementParticipant] {
 
   /** Each `SettlementParticipant` must have a unique identifier. */
   def uuid: UUID
